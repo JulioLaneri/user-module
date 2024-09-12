@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
@@ -17,27 +19,27 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody UsuarioDto dto){
-        return null;
+    public UsuarioDto create(@RequestBody UsuarioDto dto){
+        return usuarioService.create(dto);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id){
-        return null;
+    public UsuarioDto getById(@PathVariable Long id){
+        return usuarioService.getById(id);
     }
     @GetMapping("/page/{page}")
-    public ResponseEntity<?> getAll(@PathVariable int page){
-        return null;
+    public List<UsuarioDto> getAll(@PathVariable int page){
+        return usuarioService.getAll(page).getContent();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable int ID, @RequestBody UsuarioDto dto){
-        return null;
+    public UsuarioDto update(@PathVariable Long id, @RequestBody UsuarioDto dto){
+        return usuarioService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        return ResponseEntity.ok("Eliminado exitosamente");
+    public Boolean delete(@PathVariable Long id) {
+        return usuarioService.delete(id);
     }
 
 }

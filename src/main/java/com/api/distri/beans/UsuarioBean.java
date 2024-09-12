@@ -1,9 +1,7 @@
 package com.api.distri.beans;
 
 import com.api.distri.abstracts.AbstractBean;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +22,7 @@ public class UsuarioBean extends AbstractBean {
     private String telefono;
 
     // Relación con la entidad Direccion (uno a muchos)
-    @OneToMany(mappedBy = "usuario", orphanRemoval = true)
+    @OneToMany(mappedBy = "usuario",cascade = CascadeType.ALL)
     private List<DireccionBean> direcciones;
 
 }
