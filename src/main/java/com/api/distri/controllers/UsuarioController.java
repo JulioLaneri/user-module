@@ -5,6 +5,7 @@ import com.api.distri.interfaces.IUsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    public UsuarioDto getById(@PathVariable Long id){
+    public UsuarioDto getById(@PathVariable Long id) throws NoHandlerFoundException {
         return usuarioService.getById(id);
     }
     @GetMapping("/page/{page}")
