@@ -8,6 +8,11 @@ import com.api.distri.interfaces.IDireccionService;
 import com.api.distri.mappers.DireccionMapper;
 import com.api.distri.utils.Settings;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +30,9 @@ public class DireccionServiceImpl implements IDireccionService {
     private DireccionMapper mapper;
 
     @Autowired
+    private CacheManager cacheManager;
+
+    @Autowired
     public DireccionServiceImpl(DireccionDao direccionDao, DireccionMapper mapper) {
         this.direccionDao = direccionDao;
         this.mapper = mapper;
@@ -39,22 +47,46 @@ public class DireccionServiceImpl implements IDireccionService {
     }
 
     @Override
+    @Cacheable(cacheNames = "distri", key = "'direccion_' + #id")
     public DireccionDto getById(Long id) {
         DireccionBean direccionBean = direccionDao.findByIdAndActivoIsTrue(id);
-        if (direccionBean == null){
+        if (direccionBean == null) {
             throw new NotFoundException("Direccion no encontrada");
         }
-        return mapper.toDto(direccionDao.findByIdAndActivoIsTrue(id));
+        return mapper.toDto(direccionBean);
     }
 
     @Override
     public Page<DireccionDto> getAll(int page) {
         Pageable pageable = PageRequest.of(page, Settings.PAGE_SIZE);
         Page<DireccionBean> direcciones = direccionDao.findAllByActivoIsTrue(pageable);
-        return direcciones.map(mapper::toDto);
+
+        // Accede al caché
+        Cache cache = cacheManager.getCache("distri");
+
+        Page<DireccionDto> direccionDtos = direcciones.map(direccionBean -> {
+            Long direccionId = direccionBean.getId();
+            String cacheKey = "direccion_" + direccionId;
+            assert cache != null;
+            Cache.ValueWrapper valueWrapper = cache.get(cacheKey);
+
+            DireccionDto direccionDto;
+            if (valueWrapper != null) {
+                direccionDto = (DireccionDto) valueWrapper.get();
+            } else {
+                // Si no está en el caché, obtiene la dirección desde la base de datos y la cachea
+                direccionDto = getById(direccionId);
+                cache.put(cacheKey, direccionDto);
+            }
+
+            return direccionDto;
+        });
+
+        return direccionDtos;
     }
 
     @Override
+    @CachePut(cacheNames = "distri", key = "'direccion_' + #id")
     public DireccionDto update(Long id, DireccionDto direccionDto) {
         // Busca la dirección existente por ID
         DireccionBean direccionExistente = direccionDao.findByIdAndActivoIsTrue(id);
@@ -79,6 +111,7 @@ public class DireccionServiceImpl implements IDireccionService {
 
 
     @Override
+    @CacheEvict(cacheNames = "distri", key = "'direccion_' + #id")
     public boolean delete(Long id) {
         DireccionBean direccionBean = direccionDao.findByIdAndActivoIsTrue(id);
         if (direccionBean == null){

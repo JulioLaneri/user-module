@@ -13,7 +13,13 @@ import com.api.distri.mappers.DireccionMapper;
 import com.api.distri.mappers.UsuarioMapper;
 import com.api.distri.utils.Settings;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,8 +36,10 @@ public class UsuarioServiceImpl implements IUsuarioService {
     private final UsuarioMapper mapper;
     private final DireccionMapper direccionMapper;
     private final DireccionDao direccionDao;
-
     private final IDireccionService direccionService;
+
+    @Autowired
+    private CacheManager cacheManager;
 
 
     @Autowired
@@ -66,6 +74,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
 
     @Override
+    @Cacheable(cacheNames = "distri", key = "'usuario_' + #id")
     public UsuarioDto getById(Long id) {
         UsuarioBean usuarioBean = usuarioDao.findByIdAndActivoIsTrue(id);
         if (usuarioBean == null){
@@ -87,25 +96,37 @@ public class UsuarioServiceImpl implements IUsuarioService {
         Pageable pageable = PageRequest.of(page, Settings.PAGE_SIZE);
         Page<UsuarioBean> usuarios = usuarioDao.findAllByActivoIsTrue(pageable);
 
+        // Accede al caché
+        Cache cache = cacheManager.getCache("distri");
+
         Page<UsuarioDto> usuarioDtos = usuarios.map(usuarioBean -> {
-            UsuarioDto usuarioDto = mapper.toDto(usuarioBean);
+            Long usuarioId = usuarioBean.getId();
+            String cacheKey = "usuario_" + usuarioId;
+            assert cache != null;
+            Cache.ValueWrapper valueWrapper = cache.get(cacheKey);
 
-            List<DireccionBean> direccionBeanList = direccionDao.findByUsuario_idAndActivoIsTrue(usuarioBean.getId());
+            UsuarioDto usuarioDto;
+            if (valueWrapper != null) {
+                usuarioDto = (UsuarioDto) valueWrapper.get();
+            } else {
+                // Si no está en el caché, obtiene el usuario desde la base de datos y lo cachea
+                usuarioDto = getById(usuarioId);
+                cache.put(cacheKey, usuarioDto);
+            }
 
-            List<DireccionDto> usuariosList = direccionBeanList.stream()
-                    .map(direccionMapper::toDto)
-                    .collect(Collectors.toList());
-
-            usuarioDto.setDirecciones(usuariosList);
             return usuarioDto;
         });
+
         return usuarioDtos;
     }
 
 
 
 
+
+
     @Override
+    @CachePut(cacheNames = "distri", key = "'usuario_' + #id")
     public UsuarioDto update(Long id, UsuarioDto usuarioDto) {
         UsuarioBean usuarioExistente = usuarioDao.findByIdAndActivoIsTrue(id);
         if (!usuarioExistente.isActivo()){
@@ -147,6 +168,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
 
     @Override
+    @CacheEvict(cacheNames = "distri", key = "'usuario_' + #id")
     public boolean delete(Long id) {
         UsuarioBean usuarioBean = usuarioDao.findByIdAndActivoIsTrue(id);
         if (usuarioBean == null){

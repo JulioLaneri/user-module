@@ -21,6 +21,12 @@
         </encoder>
     </appender>
 
+    <!-- Logger para el sistema de cacheo -->
+    <logger name="org.springframework.cache" level="DEBUG">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </logger>
+
     <!-- Configuración del root logger -->
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
