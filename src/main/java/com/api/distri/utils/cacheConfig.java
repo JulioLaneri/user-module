@@ -15,6 +15,7 @@ public class cacheConfig {
 
     @Bean
     @Primary
+    //default minutos
     public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(defaultCacheConfig())
@@ -29,6 +30,7 @@ public class cacheConfig {
     }
 
     @Bean
+    //sin tiempo de vida
     public CacheManager cacheManagerNoTTL(RedisConnectionFactory redisConnectionFactory) {
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(defaultCacheConfigWithoutTTL())
@@ -43,6 +45,7 @@ public class cacheConfig {
     }
 
     @Bean
+    //por hora
     public CacheManager cacheManagerWithHoursTTL(RedisConnectionFactory redisConnectionFactory) {
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(defaultCacheConfigWithHoursTTL())
@@ -53,10 +56,11 @@ public class cacheConfig {
     private RedisCacheConfiguration defaultCacheConfigWithHoursTTL() {
         return RedisCacheConfiguration
                 .defaultCacheConfig()
-                .entryTtl(Duration.ofHours(Settings.TTL_HOURS)); // Configurar TTL en horas
+                .entryTtl(Duration.ofHours(Settings.TTL_HOURS));
     }
 
     @Bean
+    //por segundo
     public CacheManager cacheManagerWithSecondsTTL(RedisConnectionFactory redisConnectionFactory) {
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(defaultCacheConfigWithSecondsTTL())
@@ -67,6 +71,6 @@ public class cacheConfig {
     private RedisCacheConfiguration defaultCacheConfigWithSecondsTTL() {
         return RedisCacheConfiguration
                 .defaultCacheConfig()
-                .entryTtl(Duration.ofSeconds(Settings.TTL_SECONDS)); // Configurar TTL en segundos
+                .entryTtl(Duration.ofSeconds(Settings.TTL_SECONDS));
     }
 }

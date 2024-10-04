@@ -38,17 +38,17 @@ public class UsuarioServiceImpl implements IUsuarioService {
     private final DireccionDao direccionDao;
     private final IDireccionService direccionService;
 
-    @Autowired
-    private CacheManager cacheManager;
+    private final CacheManager cacheManager;
 
-
+//Inyeccion de dependencia
     @Autowired
-    public UsuarioServiceImpl(UsuarioDao usuarioDao, UsuarioMapper mapper, DireccionMapper direccionMapper, DireccionDao direccionDao, IDireccionService direccionService) {
+    public UsuarioServiceImpl(UsuarioDao usuarioDao, UsuarioMapper mapper, DireccionMapper direccionMapper, DireccionDao direccionDao, IDireccionService direccionService,CacheManager cacheManager) {
         this.usuarioDao = usuarioDao;
         this.mapper = mapper;
         this.direccionMapper = direccionMapper;
         this.direccionDao = direccionDao;
         this.direccionService = direccionService;
+        this.cacheManager = cacheManager;
     }
 
     @Override
@@ -74,7 +74,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
 
     @Override
-    @Cacheable(cacheNames = "distri", key = "'usuario_' + #id")
+    @Cacheable(cacheNames = "distri", key = "'usuario_' + #id", cacheManager = "cacheManagerNoTTL")
     public UsuarioDto getById(Long id) {
         UsuarioBean usuarioBean = usuarioDao.findByIdAndActivoIsTrue(id);
         if (usuarioBean == null){
@@ -95,16 +95,15 @@ public class UsuarioServiceImpl implements IUsuarioService {
     public Page<UsuarioDto> getAll(int page) {
         Pageable pageable = PageRequest.of(page, Settings.PAGE_SIZE);
         Page<UsuarioBean> usuarios = usuarioDao.findAllByActivoIsTrue(pageable);
-
         // Accede al caché
         Cache cache = cacheManager.getCache("distri");
-
         Page<UsuarioDto> usuarioDtos = usuarios.map(usuarioBean -> {
             Long usuarioId = usuarioBean.getId();
+            //generacion de clave
             String cacheKey = "usuario_" + usuarioId;
             assert cache != null;
+            //Almacenamos la clave
             Cache.ValueWrapper valueWrapper = cache.get(cacheKey);
-
             UsuarioDto usuarioDto;
             if (valueWrapper != null) {
                 usuarioDto = (UsuarioDto) valueWrapper.get();
@@ -113,7 +112,6 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 usuarioDto = getById(usuarioId);
                 cache.put(cacheKey, usuarioDto);
             }
-
             return usuarioDto;
         });
 

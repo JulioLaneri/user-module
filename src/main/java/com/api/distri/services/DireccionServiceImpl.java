@@ -29,13 +29,13 @@ public class DireccionServiceImpl implements IDireccionService {
     private DireccionDao direccionDao;
     private DireccionMapper mapper;
 
-    @Autowired
     private CacheManager cacheManager;
 
     @Autowired
-    public DireccionServiceImpl(DireccionDao direccionDao, DireccionMapper mapper) {
+    public DireccionServiceImpl(DireccionDao direccionDao, DireccionMapper mapper, CacheManager cacheManager) {
         this.direccionDao = direccionDao;
         this.mapper = mapper;
+        this.cacheManager = cacheManager;
     }
 
     @Override
@@ -47,7 +47,7 @@ public class DireccionServiceImpl implements IDireccionService {
     }
 
     @Override
-    @Cacheable(cacheNames = "distri", key = "'direccion_' + #id")
+    @Cacheable(cacheManager = "cacheManagerWithSecondsTTL",cacheNames = "distri", key = "'direccion_' + #id")
     public DireccionDto getById(Long id) {
         DireccionBean direccionBean = direccionDao.findByIdAndActivoIsTrue(id);
         if (direccionBean == null) {
