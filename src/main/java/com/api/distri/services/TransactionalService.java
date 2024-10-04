@@ -34,32 +34,32 @@ public class TransactionalService {
         return usuario;
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(propagation = Propagation.REQUIRED, timeout = 100)
     public UsuarioDto handleRequiredTransaction(UsuarioDto dto, boolean shouldRollback) throws Exception {
         return handleTransaction(dto, shouldRollback);
     }
 
-    @Transactional(propagation = Propagation.SUPPORTS)
+    @Transactional(propagation = Propagation.SUPPORTS, timeout = 100)
     public UsuarioDto handleSupportsTransaction(UsuarioDto dto, boolean shouldRollback) throws Exception {
         return handleTransaction(dto, shouldRollback);
     }
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED, timeout = 100)
     public UsuarioDto handleNotSupportedTransaction(UsuarioDto dto, boolean shouldRollback) throws Exception {
         return handleTransaction(dto, shouldRollback);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, timeout = 100)
     public UsuarioDto handleRequiresNewTransaction(UsuarioDto dto, boolean shouldRollback) throws Exception {
         return handleTransaction(dto, shouldRollback);
     }
 
-    @Transactional(propagation = Propagation.MANDATORY)
+    @Transactional(propagation = Propagation.MANDATORY, timeout = 100)
     public UsuarioDto handleMandatoryTransaction(UsuarioDto dto, boolean shouldRollback) throws Exception {
         return handleTransaction(dto, shouldRollback);
     }
 
-    @Transactional(propagation = Propagation.NEVER)
+    @Transactional(propagation = Propagation.NEVER, timeout = 100)
     public UsuarioDto handleNeverTransaction(UsuarioDto dto, boolean shouldRollback) throws Exception {
         return handleTransaction(dto, shouldRollback);
     }
