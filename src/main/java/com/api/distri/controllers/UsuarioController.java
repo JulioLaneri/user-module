@@ -2,6 +2,7 @@ package com.api.distri.controllers;
 
 import com.api.distri.dtos.UsuarioDto;
 import com.api.distri.interfaces.IUsuarioService;
+import com.api.distri.utils.PageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +30,8 @@ public class UsuarioController {
         return usuarioService.getById(id);
     }
     @GetMapping("/page/{page}")
-    public List<UsuarioDto> getAll(@PathVariable int page){
-        return usuarioService.getAll(page).getContent();
+    public PageResponse<UsuarioDto> getAll(@PathVariable int page){
+        return usuarioService.getAll(page);
     }
 
     @PutMapping("/{id}")

@@ -2,6 +2,7 @@ package com.api.distri.controllers;
 
 import com.api.distri.dtos.DireccionDto;
 import com.api.distri.interfaces.IDireccionService;
+import com.api.distri.utils.PageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +31,8 @@ public class DireccionController {
         return direccionService.getById(id);
     }
     @GetMapping("/page/{page}")
-    public List<DireccionDto> getAll(@PathVariable int page){
-        return direccionService.getAll(page).getContent();
+    public PageResponse<DireccionDto> getAll(@PathVariable int page){
+        return direccionService.getAll(page);
     }
 
     @PutMapping("/{id}")

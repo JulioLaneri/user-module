@@ -6,6 +6,7 @@ import com.api.distri.dtos.DireccionDto;
 import com.api.distri.exceptions.NotFoundException;
 import com.api.distri.interfaces.IDireccionService;
 import com.api.distri.mappers.DireccionMapper;
+import com.api.distri.utils.PageResponse;
 import com.api.distri.utils.Settings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
@@ -57,7 +58,7 @@ public class DireccionServiceImpl implements IDireccionService {
     }
 
     @Override
-    public Page<DireccionDto> getAll(int page) {
+    public PageResponse<DireccionDto> getAll(int page) {
         Pageable pageable = PageRequest.of(page, Settings.PAGE_SIZE);
         Page<DireccionBean> direcciones = direccionDao.findAllByActivoIsTrue(pageable);
 
@@ -81,8 +82,12 @@ public class DireccionServiceImpl implements IDireccionService {
 
             return direccionDto;
         });
-
-        return direccionDtos;
+        return new PageResponse<>(
+                direccionDtos.getContent(),
+                direccionDtos.getTotalPages(),
+                direccionDtos.getTotalElements(),
+                direccionDtos.getNumber() + 1
+        );
     }
 
     @Override

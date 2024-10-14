@@ -11,6 +11,7 @@ import com.api.distri.interfaces.IDireccionService;
 import com.api.distri.interfaces.IUsuarioService;
 import com.api.distri.mappers.DireccionMapper;
 import com.api.distri.mappers.UsuarioMapper;
+import com.api.distri.utils.PageResponse;
 import com.api.distri.utils.Settings;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.aop.framework.AopContext;
@@ -92,7 +93,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
 
     @Override
-    public Page<UsuarioDto> getAll(int page) {
+    public PageResponse<UsuarioDto> getAll(int page) {
         Pageable pageable = PageRequest.of(page, Settings.PAGE_SIZE);
         Page<UsuarioBean> usuarios = usuarioDao.findAllByActivoIsTrue(pageable);
         // Accede al caché
@@ -114,8 +115,13 @@ public class UsuarioServiceImpl implements IUsuarioService {
             }
             return usuarioDto;
         });
+        return new PageResponse<>(
+                usuarioDtos.getContent(),
+                usuarioDtos.getTotalPages(),
+                usuarioDtos.getTotalElements(),
+                usuarioDtos.getNumber() + 1
+        );
 
-        return usuarioDtos;
     }
 
 
